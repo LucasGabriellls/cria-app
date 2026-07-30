@@ -1,7 +1,10 @@
 package com.test.cria.entity;
 
+import com.test.cria.entity.enuns.RoleEnum;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.*;
 
 
 @AllArgsConstructor
@@ -20,4 +23,14 @@ public class User {
     private String CPF;
 
     private String password;
+
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id")
+    )
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role")
+    private Set<RoleEnum> role = new HashSet<>();
 }

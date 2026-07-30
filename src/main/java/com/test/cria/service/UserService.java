@@ -46,7 +46,8 @@ public class UserService {
         User userTemp = new User(
                 user.id(),
                 user.CPF(),
-                user.password()
+                user.password(),
+                user.role()
         );
 
         User tempUser = userRepository.save(userTemp);
