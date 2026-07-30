@@ -10,19 +10,14 @@ import lombok.*;
 @Setter
 @Builder
 @Entity
-@Table(name="teacher")
-public class Teacher {
+@Table(name="user")
+public class User {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name = "last_name")
-    private String lastName;
-
-    @Column(name = "teacher_cpf")
     private String CPF;
+
+    private String password;
 }

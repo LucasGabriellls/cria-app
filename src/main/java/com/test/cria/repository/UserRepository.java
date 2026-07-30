@@ -1,9 +1,9 @@
 package com.test.cria.repository;
 
-import com.test.cria.entity.Teacher;
+import com.test.cria.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface TeacherRepository extends JpaRepository<Teacher,Integer> {
+public interface UserRepository extends JpaRepository<User, Long> {
 }
