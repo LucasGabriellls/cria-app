@@ -4,6 +4,7 @@ import com.test.cria.DTO.request.UserRequestDTO;
 import com.test.cria.DTO.response.UserResponseDTO;
 import com.test.cria.entity.User;
 import com.test.cria.exception.UserNotFound;
+import com.test.cria.mapper.UserMapper;
 import com.test.cria.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -14,48 +15,31 @@ import java.util.List;
 public class UserService {
 
     private UserRepository userRepository;
+    private UserMapper userMapper;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository,  UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     public UserResponseDTO findById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(UserNotFound::new);
-
-        return new UserResponseDTO (
-                user.getId(),
-                user.getCPF()
-        );
+        return userMapper.toUserResponseDTO(userRepository.findById(id).orElseThrow(UserNotFound::new));
     }
     
     public List<UserResponseDTO> findAll() {
-        List<User> userTemp = userRepository.findAll();
+        List<UserResponseDTO> userTemp = userMapper.toUserResponseDTO(userRepository.findAll());
 
         if  (userTemp.isEmpty()) throw new UserNotFound("Nenhum usuário encontrado!");
 
-        return userTemp.stream()
-                .map(user -> new UserResponseDTO(
-                        user.getId(),
-                        user.getCPF()
-                ))
-                .toList();
+        return userTemp;
     }
 
     @Transactional
     public UserResponseDTO create(UserRequestDTO user) {
-        User userTemp = new User(
-                user.id(),
-                user.CPF(),
-                user.password(),
-                user.role()
-        );
 
-        User tempUser = userRepository.save(userTemp);
+        User userTemp = userMapper.toUserEntity(user);
 
-        return new UserResponseDTO(
-                userTemp.getId(),
-                userTemp.getCPF()
-        );
+        return  userMapper.toUserResponseDTO(userRepository.save(userTemp));
     }
 
     @Transactional

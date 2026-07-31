@@ -21,7 +21,7 @@ public class UserController {
 
     @GetMapping("/user/{id}")
     public ResponseEntity<UserResponseDTO> findById(@PathVariable Long id) {
-        if (id != null) throw new IllegalArgumentException("Id de usuário é necessário!");
+        if (id <= 0) throw new IllegalArgumentException("Id de usuário é necessário!");
         return ResponseEntity.status(HttpStatus.OK).body(userService.findById(id));
     }
 
@@ -42,7 +42,7 @@ public class UserController {
 
     @DeleteMapping("/user/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
-        if (id != null) throw new IllegalArgumentException("Id de usuário é necessário!");
+        if (id <= 0) throw new IllegalArgumentException("Id de usuário é necessário!");
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
