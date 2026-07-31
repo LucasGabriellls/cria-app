@@ -3,12 +3,17 @@ package com.test.cria.controller;
 import com.test.cria.DTO.request.UserRequestDTO;
 import com.test.cria.DTO.response.UserResponseDTO;
 import com.test.cria.service.UserService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/api/v1")
 public class UserController {
@@ -20,7 +25,7 @@ public class UserController {
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity<UserResponseDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<UserResponseDTO> findById(@PathVariable @Positive Long id) {
         if (id <= 0) throw new IllegalArgumentException("Id de usuário é necessário!");
         return ResponseEntity.status(HttpStatus.OK).body(userService.findById(id));
     }
