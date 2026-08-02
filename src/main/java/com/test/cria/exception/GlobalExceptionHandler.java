@@ -11,6 +11,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -35,17 +36,50 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected @Nullable ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return super.handleHttpRequestMethodNotSupported(ex, headers, status, request);
+        ServletWebRequest servletWebRequest = (ServletWebRequest) request;
+
+        String uri = servletWebRequest.getRequest().getRequestURI();
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "O caminho informado esta incorreto!",
+                LocalDateTime.now(),
+                uri
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @Override
     protected @Nullable ResponseEntity<Object> handleNoResourceFoundException(NoResourceFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return super.handleNoResourceFoundException(ex, headers, status, request);
+        ServletWebRequest servletWebRequest = (ServletWebRequest) request;
+
+        String uri = servletWebRequest.getRequest().getRequestURI();
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "Nenhum dado informado!",
+                LocalDateTime.now(),
+                uri
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @Override
     protected @Nullable ResponseEntity<Object> handleMissingPathVariable(MissingPathVariableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return super.handleMissingPathVariable(ex, headers, status, request);
+        ServletWebRequest servletWebRequest = (ServletWebRequest) request;
+
+        String uri = servletWebRequest.getRequest().getRequestURI();
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "O dado precisa ser do tipo inteiro!",
+                LocalDateTime.now(),
+                uri
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
 
