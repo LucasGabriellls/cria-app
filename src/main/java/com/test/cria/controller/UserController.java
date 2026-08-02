@@ -3,9 +3,6 @@ package com.test.cria.controller;
 import com.test.cria.DTO.request.UserRequestDTO;
 import com.test.cria.DTO.response.UserResponseDTO;
 import com.test.cria.service.UserService;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -25,8 +22,7 @@ public class UserController {
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity<UserResponseDTO> findById(@PathVariable @Positive Long id) {
-        if (id <= 0) throw new IllegalArgumentException("Id de usuário é necessário!");
+    public ResponseEntity<UserResponseDTO> findById(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findById(id));
     }
 
@@ -47,7 +43,6 @@ public class UserController {
 
     @DeleteMapping("/user/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
-        if (id <= 0) throw new IllegalArgumentException("Id de usuário é necessário!");
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }

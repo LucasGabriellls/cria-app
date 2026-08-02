@@ -3,7 +3,7 @@ package com.test.cria.service;
 import com.test.cria.DTO.request.UserRequestDTO;
 import com.test.cria.DTO.response.UserResponseDTO;
 import com.test.cria.entity.User;
-import com.test.cria.exception.UserNotFound;
+import com.test.cria.exception.userExceptions.InvalidAttributeException;
 import com.test.cria.mapper.UserMapper;
 import com.test.cria.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -23,13 +23,14 @@ public class UserService {
     }
 
     public UserResponseDTO findById(Long id) {
-        return userMapper.toUserResponseDTO(userRepository.findById(id).orElseThrow(UserNotFound::new));
+        if (id <= 0) throw new InvalidAttributeException("O id do usuario deve ser maior que 1!");
+        return userMapper.toUserResponseDTO(userRepository.findById(id).orElseThrow(() -> new InvalidAttributeException("Usuário não encontrado!")));
     }
     
     public List<UserResponseDTO> findAll() {
         List<UserResponseDTO> userTemp = userMapper.toUserResponseDTO(userRepository.findAll());
 
-        if  (userTemp.isEmpty()) throw new UserNotFound("Nenhum usuário encontrado!");
+        if  (userTemp.isEmpty()) throw new InvalidAttributeException("Nenhum usuário encontrado!");
 
         return userTemp;
     }
@@ -44,25 +45,16 @@ public class UserService {
 
     @Transactional
     public UserResponseDTO update(UserRequestDTO user) {
+        UserResponseDTO userRequestDTO = findById(user.id());
 
-        UserResponseDTO userRequestDTOTemp = findById(user.id());
-
-        if (userRequestDTOTemp != null) {
-            return create(user);
-        } else {
-            throw new UserNotFound();
-        }
+        return create(userMapper.toUserRequestDTO(userRequestDTO));
     }
 
     @Transactional
     public void delete(Long id) {
 
-        UserResponseDTO user = findById(id);
+        UserResponseDTO userResponseDTO = findById(id);
 
-        if (user != null) {
-            userRepository.deleteById(id);
-        } else {
-            throw new UserNotFound();
-        }
+        userRepository.deleteById(id);
     }
 }

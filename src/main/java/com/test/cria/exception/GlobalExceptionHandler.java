@@ -1,20 +1,27 @@
 package com.test.cria.exception;
 
+import com.test.cria.exception.userExceptions.InvalidAttributeException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
+import org.jspecify.annotations.Nullable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(UserNotFound.class)
-    private ResponseEntity<ErrorResponse> userNotFoundHandler(UserNotFound exception, HttpServletRequest request) {
+    @ExceptionHandler(InvalidAttributeException.class)
+    private ResponseEntity<ErrorResponse> userNotFoundHandler(InvalidAttributeException exception, HttpServletRequest request) {
 
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
@@ -26,17 +33,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    private ResponseEntity<ErrorResponse> idExpectedHandler(ConstraintViolationException exception, HttpServletRequest request) {
-
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                exception.getMessage(),
-                LocalDateTime.now(),
-                request.getRequestURI()
-                //exception.getMessage()
-        );
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    @Override
+    protected @Nullable ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        return super.handleHttpRequestMethodNotSupported(ex, headers, status, request);
     }
+
+    @Override
+    protected @Nullable ResponseEntity<Object> handleNoResourceFoundException(NoResourceFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        return super.handleNoResourceFoundException(ex, headers, status, request);
+    }
+
+    @Override
+    protected @Nullable ResponseEntity<Object> handleMissingPathVariable(MissingPathVariableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        return super.handleMissingPathVariable(ex, headers, status, request);
+    }
+
+
 }
