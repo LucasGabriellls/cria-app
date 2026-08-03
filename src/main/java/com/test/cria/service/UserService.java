@@ -7,15 +7,19 @@ import com.test.cria.exception.userExceptions.InvalidAttributeException;
 import com.test.cria.mapper.UserMapper;
 import com.test.cria.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
 
-    private UserRepository userRepository;
-    private UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     public UserService(UserRepository userRepository,  UserMapper userMapper) {
         this.userRepository = userRepository;
@@ -23,16 +27,15 @@ public class UserService {
     }
 
     public UserResponseDTO findById(Long id) {
-        if (id <= 0) throw new InvalidAttributeException("O id do usuario deve ser maior que 1!");
+        if (id <= 0) throw new InvalidAttributeException("O id do usuario deve ser maior que 0!");
         return userMapper.toUserResponseDTO(userRepository.findById(id).orElseThrow(() -> new InvalidAttributeException("Usuário não encontrado!")));
     }
     
-    public List<UserResponseDTO> findAll() {
-        List<UserResponseDTO> userTemp = userMapper.toUserResponseDTO(userRepository.findAll());
+    public Page<UserResponseDTO> list(int  page, int size) {
 
-        if  (userTemp.isEmpty()) throw new InvalidAttributeException("Nenhum usuário encontrado!");
+        Page<User> pageUser = userRepository.findAll(PageRequest.of(page, size));
 
-        return userTemp;
+        return pageUser.map(userMapper::toUserResponseDTO);
     }
 
     @Transactional
@@ -45,9 +48,19 @@ public class UserService {
 
     @Transactional
     public UserResponseDTO update(UserRequestDTO user) {
-        UserResponseDTO userRequestDTO = findById(user.id());
+        if (user.id() == null || user.id() <= 0) {
+            throw new InvalidAttributeException("O id do usuário deve ser maior que 0!");
+        }
 
-        return create(userMapper.toUserRequestDTO(userRequestDTO));
+        User userEntity = userRepository.findById(user.id())
+                .orElseThrow(() -> new InvalidAttributeException("Usuário não encontrado!"));
+
+        userEntity.setUserName(user.userName());
+        userEntity.setPassword(user.password());
+        userEntity.setRole(user.role());
+
+        User updatedUser = userRepository.save(userEntity);
+        return userMapper.toUserResponseDTO(updatedUser);
     }
 
     @Transactional

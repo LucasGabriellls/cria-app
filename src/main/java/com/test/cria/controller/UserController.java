@@ -3,16 +3,19 @@ package com.test.cria.controller;
 import com.test.cria.DTO.request.UserRequestDTO;
 import com.test.cria.DTO.response.UserResponseDTO;
 import com.test.cria.service.UserService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Validated
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/users")
 public class UserController {
 
     private final UserService userService;
@@ -21,28 +24,29 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/user/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<UserResponseDTO> findById(@PathVariable Long id) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.findById(id));
     }
 
-    @GetMapping("/users")
-    public ResponseEntity<List<UserResponseDTO>> findAll() {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.findAll());
+    @GetMapping
+    public ResponseEntity<Page<UserResponseDTO>> list(@RequestParam(defaultValue = "0") @PositiveOrZero int page,
+                                                         @RequestParam(defaultValue = "10") @Positive @Max(20) int size) {
+        return ResponseEntity.status(HttpStatus.OK).body(userService.list(page, size));
     }
 
-    @PostMapping("/user")
-    public ResponseEntity<UserResponseDTO> create(@RequestBody UserRequestDTO user) {
+    @PostMapping
+    public ResponseEntity<UserResponseDTO> create(@Valid @RequestBody UserRequestDTO user) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(user));
     }
 
-    @PutMapping("/user")
-    public ResponseEntity<UserResponseDTO> update(@RequestBody UserRequestDTO user) {
+    @PutMapping
+    public ResponseEntity<UserResponseDTO> update(@Valid @RequestBody UserRequestDTO user) {
         return ResponseEntity.status(HttpStatus.OK).body(userService.update(user));
     }
 
-    @DeleteMapping("/user/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
