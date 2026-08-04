@@ -9,11 +9,8 @@ import com.test.cria.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -67,6 +64,8 @@ public class UserService {
     public void delete(Long id) {
 
         UserResponseDTO userResponseDTO = findById(id);
+
+        if (userResponseDTO == null) throw new InvalidAttributeException("Usuário não encontrado!");
 
         userRepository.deleteById(id);
     }
