@@ -6,18 +6,14 @@ import jakarta.validation.constraints.NotEmpty;
 
 import java.util.Set;
 
-public record UserRequestDTO(
-
-
-        Long id,
-
-        @NotBlank(message = "O nome de usuário é obrigatório")
+public record UserCreateRequestDTO (
+        @NotBlank(message = "Username is required")
         String userName,
 
-        @NotBlank(message = "A senha é obrigatória")
+        @NotBlank(message = "Password is required")
         String password,
 
-        @NotEmpty(message = "O usuário precisa ter pelo menos uma role")
+        @NotEmpty(message = "At least one role is required")
         Set<RoleEnum> role
 ) {
 }

@@ -1,6 +1,6 @@
 package com.test.cria.service;
 
-import com.test.cria.dto.request.userRequest.UserRequestDTO;
+import com.test.cria.dto.request.userRequest.UserCreateRequestDTO;
 import com.test.cria.dto.request.userRequest.UserUpdateRequestDTO;
 import com.test.cria.dto.response.userResponse.UserPageResponseDTO;
 import com.test.cria.dto.response.userResponse.UserResponseDTO;
@@ -40,10 +40,8 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDTO create(UserRequestDTO user) {
-        UserResponseDTO userResponse = findById(user.id());
-
-        if (userResponse != null) throw new UserAlreadyExistsException("User already exists");
+    public UserResponseDTO create(UserCreateRequestDTO user) {
+        if (userRepository.existsByUserName(user.userName())) throw new UserAlreadyExistsException("User already exists");
 
         User userTemp = userMapper.toUserEntity(user);
 

@@ -1,6 +1,6 @@
 package com.test.cria.controller;
 
-import com.test.cria.dto.request.userRequest.UserRequestDTO;
+import com.test.cria.dto.request.userRequest.UserCreateRequestDTO;
 import com.test.cria.dto.request.userRequest.UserUpdateRequestDTO;
 import com.test.cria.dto.response.userResponse.UserPageResponseDTO;
 import com.test.cria.dto.response.userResponse.UserResponseDTO;
@@ -28,20 +28,22 @@ public class UserController {
     //@Operation
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public UserResponseDTO findById(@PathVariable @NotNull(message = "ID is required") @Positive(message = "ID must be greater than 0") Long id) {
+    public UserResponseDTO findById(@PathVariable @NotNull(message = "ID is required") @Positive(message = "ID must be greater than zero") Long id) { // tratar o notnull
         return userService.findById(id);
     }
 
+    // ?page=<value>&size=<value>
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public UserPageResponseDTO list(@RequestParam(defaultValue = "0") @PositiveOrZero int page,
-                                    @RequestParam(defaultValue = "10") @Positive @Max(20) int size) {
+    public UserPageResponseDTO list(@RequestParam(defaultValue = "0") @PositiveOrZero(message = "Page must be greater than or equal to zero") int page,
+                                    @RequestParam(defaultValue = "10") @Positive(message = "Size must be greater than zero")
+                                    @Max(value = 20, message = "Size must be less than or equal to 20") int size) {
         return userService.list(page, size);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponseDTO create(@Valid @RequestBody UserRequestDTO user) {
+    public UserResponseDTO create(@Valid @RequestBody UserCreateRequestDTO user) {
         return userService.create(user);
     }
 
@@ -53,7 +55,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable  @NotNull(message = "ID is required") @Positive(message = "ID must be greater than 0") Long id) {
+    public void delete(@PathVariable  @NotNull(message = "ID is required") @Positive(message = "ID must be greater than zero") Long id) {
         userService.delete(id);
     }
 }

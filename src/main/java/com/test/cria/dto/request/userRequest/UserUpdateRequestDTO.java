@@ -8,7 +8,7 @@ import java.util.Set;
 public record UserUpdateRequestDTO(
 
         @NotNull(message = "ID is required")
-        @Positive(message = "ID must be greater than 0")
+        @Positive(message = "ID must be greater than zero")
         Long id,
 
         @NotBlank(message = "Username is required")

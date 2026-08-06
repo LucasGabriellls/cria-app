@@ -63,10 +63,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         List<ErrorDetail> details = exception.getConstraintViolations()
                 .stream()
                 .map(violation -> {
-                    // Pega a propriedade (ex: "findById.id")
                     String propertyPath = violation.getPropertyPath().toString();
 
-                    // Extrai apenas o nome do parâmetro (ex: "id")
                     String fieldName = propertyPath.contains(".")
                             ? propertyPath.substring(propertyPath.lastIndexOf('.') + 1)
                             : propertyPath;
