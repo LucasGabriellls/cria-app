@@ -1,6 +1,6 @@
 package com.test.cria.entity;
 
-import com.test.cria.entity.enuns.RoleEnum;
+import com.test.cria.entity.enums.RoleEnum;
 import jakarta.persistence.*;
 import lombok.*;
 

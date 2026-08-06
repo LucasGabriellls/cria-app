@@ -1,6 +1,6 @@
-package com.test.cria.DTO.request;
+package com.test.cria.dto.request.userRequest;
 
-import com.test.cria.entity.enuns.RoleEnum;
+import com.test.cria.entity.enums.RoleEnum;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 

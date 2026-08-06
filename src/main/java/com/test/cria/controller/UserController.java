@@ -1,24 +1,22 @@
 package com.test.cria.controller;
 
-import com.test.cria.DTO.request.UserRequestDTO;
-import com.test.cria.DTO.response.UserResponseDTO;
+import com.test.cria.dto.request.userRequest.UserRequestDTO;
+import com.test.cria.dto.request.userRequest.UserUpdateRequestDTO;
+import com.test.cria.dto.response.userResponse.UserPageResponseDTO;
+import com.test.cria.dto.response.userResponse.UserResponseDTO;
 import com.test.cria.service.UserService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
-import org.springframework.data.domain.Page;
+import jakarta.validation.constraints.*;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 
 @RestController
 @RequestMapping("/api/v1/users")
 @Tag(name = "Usuário")
+@Validated
 public class UserController {
 
     private final UserService userService;
@@ -29,29 +27,33 @@ public class UserController {
 
     //@Operation
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> findById(@PathVariable Long id) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.findById(id));
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponseDTO findById(@PathVariable @NotNull(message = "ID is required") @Positive(message = "ID must be greater than 0") Long id) {
+        return userService.findById(id);
     }
 
     @GetMapping
-    public ResponseEntity<Page<UserResponseDTO>> list(@RequestParam(defaultValue = "0") @PositiveOrZero int page,
-                                                         @RequestParam(defaultValue = "10") @Positive @Max(20) int size) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.list(page, size));
+    @ResponseStatus(HttpStatus.OK)
+    public UserPageResponseDTO list(@RequestParam(defaultValue = "0") @PositiveOrZero int page,
+                                    @RequestParam(defaultValue = "10") @Positive @Max(20) int size) {
+        return userService.list(page, size);
     }
 
     @PostMapping
-    public ResponseEntity<UserResponseDTO> create(@Valid @RequestBody UserRequestDTO user) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(user));
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponseDTO create(@Valid @RequestBody UserRequestDTO user) {
+        return userService.create(user);
     }
 
     @PutMapping
-    public ResponseEntity<UserResponseDTO> update(@Valid @RequestBody UserRequestDTO user) {
-        return ResponseEntity.status(HttpStatus.OK).body(userService.update(user));
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponseDTO update(@Valid @RequestBody UserUpdateRequestDTO user) {
+        return userService.update(user);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable  @NotNull(message = "ID is required") @Positive(message = "ID must be greater than 0") Long id) {
         userService.delete(id);
-        return ResponseEntity.noContent().build();
     }
 }

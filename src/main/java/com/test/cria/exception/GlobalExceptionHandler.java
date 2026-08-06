@@ -1,91 +1,133 @@
 package com.test.cria.exception;
 
 import com.test.cria.exception.userExceptions.InvalidAttributeException;
+import com.test.cria.exception.userExceptions.UserAlreadyExistsException;
+import com.test.cria.exception.userExceptions.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.jspecify.annotations.Nullable;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.MissingPathVariableException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidAttributeException.class)
     private ResponseEntity<ErrorResponse> invalidAttributeHandler(InvalidAttributeException exception, HttpServletRequest request) {
-
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.NOT_FOUND.value(),
+        ErrorResponse error = buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
-                LocalDateTime.now(),
-                request.getRequestURI()
+                request.getRequestURI(),
+                ErrorCodeEnum.INVALID_USER_ID
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    private ResponseEntity<ErrorResponse> userAlreadyExistsHandler(UserAlreadyExistsException exception, HttpServletRequest request) {
+        ErrorResponse error = buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage(),
+                request.getRequestURI(),
+                ErrorCodeEnum.USER_ALREADY_EXISTS
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    private ResponseEntity<ErrorResponse> userNotFoundHandler(UserNotFoundException exception, HttpServletRequest request) {
+        ErrorResponse error = buildErrorResponse(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage(),
+                request.getRequestURI(),
+                ErrorCodeEnum.USER_NOT_FOUND
         );
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    private ResponseEntity<ErrorResponse> methodArgumentTypeMismatchHandler(MethodArgumentTypeMismatchException exception, HttpServletRequest request) {
-        ErrorResponse error = new ErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                "O dado precisa ser do tipo inteiro!",
-                LocalDateTime.now(),
-                request.getRequestURI()
+    @ExceptionHandler(ConstraintViolationException.class)
+    private ResponseEntity<ErrorResponse> contrainViolationHandler(ConstraintViolationException exception, HttpServletRequest request) {
+        List<ErrorDetail> details = exception.getConstraintViolations()
+                .stream()
+                .map(violation -> {
+                    // Pega a propriedade (ex: "findById.id")
+                    String propertyPath = violation.getPropertyPath().toString();
+
+                    // Extrai apenas o nome do parâmetro (ex: "id")
+                    String fieldName = propertyPath.contains(".")
+                            ? propertyPath.substring(propertyPath.lastIndexOf('.') + 1)
+                            : propertyPath;
+
+                    return new ErrorDetail(fieldName, violation.getMessage());
+                })
+                .toList();
+
+        ErrorResponse error = buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                request.getRequestURI(),
+                ErrorCodeEnum.VALIDATION_FAILED,
+                details
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @Override
-    protected @Nullable ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex,
-                                                                                   HttpHeaders headers,
-                                                                                   HttpStatusCode status,
-                                                                                   WebRequest request) {
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        String path = ((ServletWebRequest) request)
+                .getRequest()
+                .getRequestURI();
 
-        String message = String.format("O método HTTP '%s' não é suportado para este endpoint. Métodos suportados: %s",
-                ex.getMethod(), ex.getSupportedHttpMethods());
+        List<ErrorDetail> invalidFields = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(error -> new ErrorDetail(error.getField(), error.getDefaultMessage()))
+                .toList();
 
-        return buildErrorResponse(HttpStatus.METHOD_NOT_ALLOWED, message);
+        ErrorResponse errorResponse = buildErrorResponse(
+                status,
+                path,
+                ErrorCodeEnum.VALIDATION_FAILED,
+                invalidFields
+        );
+
+        return ResponseEntity.status(status).body(errorResponse);
     }
 
-    @Override
-    protected @Nullable ResponseEntity<Object> handleNoResourceFoundException(NoResourceFoundException ex,
-                                                                              HttpHeaders headers,
-                                                                              HttpStatusCode status,
-                                                                              WebRequest request) {
 
-        String message = String.format("O recurso ou endpoint '%s' não foi encontrado no servidor.", ex.getResourcePath());
-        return buildErrorResponse(HttpStatus.NOT_FOUND, message);
+
+    private ErrorResponse buildErrorResponse(HttpStatusCode status, String message, String path, ErrorCodeEnum code) {
+        return new ErrorResponse(
+                status.value(),
+                message,
+                LocalDateTime.now(),
+                path,
+                code,
+                null
+        );
     }
 
-    @Override
-    protected @Nullable ResponseEntity<Object> handleMissingPathVariable(MissingPathVariableException ex,
-                                                                         HttpHeaders headers,
-                                                                         HttpStatusCode status,
-                                                                         WebRequest request) {
-
-        String message = String.format("O parâmetro de URL '%s' é obrigatório e está ausente.", ex.getVariableName());
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
-    }
-
-    private ResponseEntity<Object> buildErrorResponse(HttpStatus status, String message) {
-
-        ErrorResponse error = ErrorResponse.builder()
-                .status(status.value())
-                .message(message)
-                .timestamp(LocalDateTime.now())
-                .build();
-
-        return ResponseEntity.status(status).body(error);
+    private ErrorResponse buildErrorResponse(HttpStatusCode status, String path, ErrorCodeEnum code, List<ErrorDetail> details) {
+        return new ErrorResponse(
+                status.value(),
+                "Validation failed for one or more fields",
+                LocalDateTime.now(),
+                path,
+                code,
+                details
+        );
     }
 }

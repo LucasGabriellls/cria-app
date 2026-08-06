@@ -1,4 +1,4 @@
-package com.test.cria.entity.enuns;
+package com.test.cria.entity.enums;
 
 public enum RoleEnum {
 
