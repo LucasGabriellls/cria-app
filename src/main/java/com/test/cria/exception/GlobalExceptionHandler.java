@@ -5,16 +5,21 @@ import com.test.cria.exception.userExceptions.UserAlreadyExistsException;
 import com.test.cria.exception.userExceptions.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingPathVariableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,38 +29,38 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidAttributeException.class)
     private ResponseEntity<ErrorResponse> invalidAttributeHandler(InvalidAttributeException exception, HttpServletRequest request) {
-        ErrorResponse error = buildErrorResponse(
+        ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
                 request.getRequestURI(),
                 ErrorCodeEnum.INVALID_USER_ID
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     private ResponseEntity<ErrorResponse> userAlreadyExistsHandler(UserAlreadyExistsException exception, HttpServletRequest request) {
-        ErrorResponse error = buildErrorResponse(
+        ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
                 request.getRequestURI(),
                 ErrorCodeEnum.USER_ALREADY_EXISTS
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
     private ResponseEntity<ErrorResponse> userNotFoundHandler(UserNotFoundException exception, HttpServletRequest request) {
-        ErrorResponse error = buildErrorResponse(
+        ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.NOT_FOUND,
                 exception.getMessage(),
                 request.getRequestURI(),
                 ErrorCodeEnum.USER_NOT_FOUND
         );
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -73,14 +78,56 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 })
                 .toList();
 
-        ErrorResponse error = buildErrorResponse(
+        ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 request.getRequestURI(),
                 ErrorCodeEnum.VALIDATION_FAILED,
                 details
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    private ResponseEntity<ErrorResponse> methodArgumentTypeMismatchHandler(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+
+
+        ErrorResponse errorResponse = buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Parameter invite received an invalid value",
+                request.getRequestURI(),
+                ErrorCodeEnum.INVALID_PARAMETER_TYPE
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @Override
+    protected @Nullable ResponseEntity<Object> handleHttpRequestMethodNotSupported(HttpRequestMethodNotSupportedException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        String path = ((ServletWebRequest) request).getRequest().getRequestURI();
+
+        ErrorResponse errorResponse = buildErrorResponse(
+                HttpStatus.METHOD_NOT_ALLOWED,
+                "HTTP method is not supported for this endpoint",
+                path,
+                ErrorCodeEnum.METHOD_NOT_ALLOWED
+        );
+
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(errorResponse);
+    }
+
+    @Override
+    protected @Nullable ResponseEntity<Object> handleMissingPathVariable(MissingPathVariableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        String path = ((ServletWebRequest) request).getRequest().getRequestURI();
+
+        ErrorResponse errorResponse = buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                "A required value is missing",
+                path,
+                ErrorCodeEnum.MISSING_PATH_VARIABLE
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @Override
@@ -96,13 +143,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .toList();
 
         ErrorResponse errorResponse = buildErrorResponse(
-                status,
+                HttpStatus.BAD_REQUEST,
                 path,
                 ErrorCodeEnum.VALIDATION_FAILED,
                 invalidFields
         );
 
-        return ResponseEntity.status(status).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @Override
+    protected @Nullable ResponseEntity<Object> handleNoResourceFoundException(NoResourceFoundException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        ErrorResponse errorResponse = buildErrorResponse(
+                HttpStatus.NOT_FOUND,
+                "Resource or endpoint not found",
+                ex.getResourcePath(),
+                ErrorCodeEnum.RESOURCE_NOT_FOUND
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
 
