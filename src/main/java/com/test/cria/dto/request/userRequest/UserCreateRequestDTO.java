@@ -8,7 +8,7 @@ import java.util.Set;
 
 public record UserCreateRequestDTO (
         @NotBlank(message = "Username is required")
-        String userName,
+        String username,
 
         @NotBlank(message = "Password is required")
         String password,

@@ -12,7 +12,7 @@ public record UserUpdateRequestDTO(
         Long id,
 
         @NotBlank(message = "Username is required")
-        String userName,
+        String username,
 
         @NotBlank(message = "Password is required")
         String password,

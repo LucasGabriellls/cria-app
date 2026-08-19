@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class    UserService {
+public class UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -41,7 +41,7 @@ public class    UserService {
 
     @Transactional
     public UserResponseDTO create(UserCreateRequestDTO user) {
-        if (userRepository.existsByUserName(user.userName())) throw new UserAlreadyExistsException("User already exists");
+        if (userRepository.existsByUsername(user.username())) throw new UserAlreadyExistsException("User already exists");
 
         User userTemp = userMapper.toUserEntity(user);
 
@@ -53,7 +53,7 @@ public class    UserService {
         User userEntity = userRepository.findById(user.id())
                 .orElseThrow(() -> new UserNotFoundException("User not found!"));
 
-        userEntity.setUserName(user.userName());
+        userEntity.setUsername(user.username());
         userEntity.setPassword(user.password());
         userEntity.setRole(user.role());
 

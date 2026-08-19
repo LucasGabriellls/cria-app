@@ -1,0 +1,36 @@
+package com.test.cria.controller;
+
+import com.test.cria.dto.request.authRequest.LoginRequestDTO;
+import com.test.cria.dto.request.authRequest.RegisterRequestDTO;
+import com.test.cria.dto.response.authResponse.AuthenticationResponseDTO;
+import com.test.cria.service.AuthenticationService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/auth")
+public class AuthenticationController {
+
+    private AuthenticationService authenticationService;
+
+    public AuthenticationController(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthenticationResponseDTO> register(
+            @RequestBody RegisterRequestDTO request
+    ) {
+        return ResponseEntity.ok(authenticationService.register(request));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthenticationResponseDTO> login(
+            @RequestBody LoginRequestDTO request
+    ) {
+        return ResponseEntity.ok(authenticationService.login(request));
+    }
+}

@@ -109,7 +109,7 @@ class UserServiceTest {
         User user = userTest();
         UserResponseDTO userResponse = userResponseTest();
 
-        Mockito.when(userRepository.existsByUserName(userCreate.userName())).thenReturn(false);
+        Mockito.when(userRepository.existsByUsername(userCreate.username())).thenReturn(false);
         Mockito.when(userMapper.toUserEntity(userCreate)).thenReturn(user);
         Mockito.when(userRepository.save(user)).thenReturn(user);
         Mockito.when(userMapper.toUserResponseDTO(user)).thenReturn(userResponse);
@@ -125,7 +125,7 @@ class UserServiceTest {
     void createCase2() {
         UserCreateRequestDTO userCreate = userCreate();
 
-        Mockito.when(userRepository.existsByUserName(userCreate.userName())).thenReturn(true);
+        Mockito.when(userRepository.existsByUsername(userCreate.username())).thenReturn(true);
 
         Assertions.assertThrows(UserAlreadyExistsException.class, () -> userService.create(userCreate));
     }
