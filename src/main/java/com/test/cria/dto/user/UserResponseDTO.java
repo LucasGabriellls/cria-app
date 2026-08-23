@@ -1,4 +1,4 @@
-package com.test.cria.dto.response.userResponse;
+package com.test.cria.dto.user;
 
 import com.test.cria.entity.enums.RoleEnum;
 

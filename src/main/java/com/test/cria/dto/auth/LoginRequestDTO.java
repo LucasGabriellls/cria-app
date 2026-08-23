@@ -1,4 +1,4 @@
-package com.test.cria.dto.request.authRequest;
+package com.test.cria.dto.auth;
 
 public record LoginRequestDTO(
         String email,

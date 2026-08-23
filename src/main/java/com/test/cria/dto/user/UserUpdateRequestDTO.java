@@ -1,4 +1,4 @@
-package com.test.cria.dto.request.userRequest;
+package com.test.cria.dto.user;
 
 import com.test.cria.entity.enums.RoleEnum;
 import jakarta.validation.constraints.*;

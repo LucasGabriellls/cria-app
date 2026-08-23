@@ -1,7 +1,7 @@
 package com.test.cria.service;
 
-import com.test.cria.dto.request.authRequest.LoginRequestDTO;
-import com.test.cria.dto.response.authResponse.AuthenticationResponseDTO;
+import com.test.cria.dto.auth.LoginRequestDTO;
+import com.test.cria.dto.auth.AuthenticationResponseDTO;
 import com.test.cria.exception.userExceptions.UserNotFoundException;
 import com.test.cria.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;

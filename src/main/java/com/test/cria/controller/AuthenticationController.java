@@ -1,7 +1,7 @@
 package com.test.cria.controller;
 
-import com.test.cria.dto.request.authRequest.LoginRequestDTO;
-import com.test.cria.dto.response.authResponse.AuthenticationResponseDTO;
+import com.test.cria.dto.auth.LoginRequestDTO;
+import com.test.cria.dto.auth.AuthenticationResponseDTO;
 import com.test.cria.service.AuthenticationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

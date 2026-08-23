@@ -1,7 +1,7 @@
 package com.test.cria.mapper;
 
-import com.test.cria.dto.request.userRequest.UserCreateRequestDTO;
-import com.test.cria.dto.response.userResponse.UserResponseDTO;
+import com.test.cria.dto.user.UserCreateRequestDTO;
+import com.test.cria.dto.user.UserResponseDTO;
 import com.test.cria.entity.Role;
 import com.test.cria.entity.User;
 import com.test.cria.entity.enums.RoleEnum;

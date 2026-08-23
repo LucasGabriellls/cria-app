@@ -1,4 +1,4 @@
-package com.test.cria.dto.response.authResponse;
+package com.test.cria.dto.auth;
 
 public record AuthenticationResponseDTO(
         String token
