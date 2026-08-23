@@ -41,13 +41,6 @@ public class UserController {
         return userService.findAllPaginated(page, size);
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public UserResponseDTO create(@Valid @RequestBody UserCreateRequestDTO user) {
-        return userService.create(user);
-    }
-
-
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public UserResponseDTO update(@Valid @RequestBody UserUpdateRequestDTO user) {

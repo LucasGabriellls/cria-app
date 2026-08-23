@@ -49,24 +49,6 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDTO create(UserCreateRequestDTO userRequest) {
-        if (this.userRepository.existsByEmail(userRequest.email())) throw new UserAlreadyExistsException("User already exists");
-
-        User userEntity = this.userMapper.toUserEntity(userRequest);
-
-        userEntity.setPassword(this.passwordEncoder.encode(userRequest.password()));
-
-        Set<Role> roles = userRequest.roles().stream()
-                .map(userRole -> this.roleRepository.findByRole(userRole)
-                        .orElseThrow(() -> new UserNotFoundException("Role not found: " + userRole)))
-                .collect(Collectors.toSet());
-
-        userEntity.setRoles(roles);
-
-        return this.userMapper.toUserResponseDTO(this.userRepository.save(userEntity));
-    }
-
-    @Transactional
     public UserResponseDTO update(UserUpdateRequestDTO userRequest) {
         User userEntity = userRepository.findById(userRequest.id())
                 .orElseThrow(() -> new UserNotFoundException("User not found!"));

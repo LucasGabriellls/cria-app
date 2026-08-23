@@ -112,6 +112,7 @@ class UserServiceTest {
         Assertions.assertEquals(users.users().isEmpty(), true);
     }
 
+    /*
     @Test
     @DisplayName("Should create a user successfully")
     void createCase1() {
@@ -174,6 +175,8 @@ class UserServiceTest {
         Mockito.verify(userRepository, Mockito.never()).save(Mockito.any());
     }
 
+
+     */
     @Test
     @DisplayName("Should update user successfully when data is valid")
     void updateCase1() {

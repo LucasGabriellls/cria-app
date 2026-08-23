@@ -1,0 +1,6 @@
+CREATE TABLE employee (
+    id BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    registration_number VARCHAR(50) NOT NULL UNIQUE,
+    user_id BIGINT NOT NULL UNIQUE,
+    CONSTRAINT fk_employee_user FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
