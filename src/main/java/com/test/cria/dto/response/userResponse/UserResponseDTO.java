@@ -7,6 +7,6 @@ import java.util.List;
 public record UserResponseDTO(
         long id,
         String username,
-        List<RoleEnum> role
+        List<RoleEnum> roles
 ) {
 }

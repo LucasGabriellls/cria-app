@@ -1,0 +1,13 @@
+CREATE TABLE roles (
+    id_roles BIGINT AUTO_INCREMENT PRIMARY KEY,
+    role VARCHAR(50) NOT NULL UNIQUE
+);
+
+INSERT INTO roles (role) VALUES
+    ('ADMIN'),
+    ('DIRECTOR'),
+    ('COORDINATOR'),
+    ('SECRETARY'),
+    ('GUARDIAN'),
+    ('TEACHER'),
+    ('ASSISTANT');

@@ -1,6 +1,5 @@
 package com.test.cria.entity;
 
-import com.test.cria.entity.enums.RoleEnum;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,34 +20,38 @@ import java.util.stream.Collectors;
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_name" , unique = true)
-    private String username;
+    private String firstName;
+
+    private String lastName;
+
+    @Column(unique = true)
+    private String email;
 
     private String password;
 
-    @Builder.Default
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
+    private Date activity;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
             name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id")
+            joinColumns = @JoinColumn(name = "id_user"),
+            inverseJoinColumns = @JoinColumn(name = "id_role")
     )
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role")
-    private Set<RoleEnum> role = new HashSet<>();
+    private Set<Role> roles = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.role.stream()
-                .map(roleEnum -> new SimpleGrantedAuthority("ROLE_" + roleEnum.name()))
+        return this.roles.stream()
+                .map(roleEnum -> new SimpleGrantedAuthority("ROLE_" + roleEnum.getRole().name()))
                 .collect(Collectors.toList());
     }
 
     @Override
     public String getUsername() {
-        return this.username;
+        return this.email;
     }
 
     @Override

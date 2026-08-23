@@ -1,7 +1,6 @@
 package com.test.cria.controller;
 
 import com.test.cria.dto.request.authRequest.LoginRequestDTO;
-import com.test.cria.dto.request.authRequest.RegisterRequestDTO;
 import com.test.cria.dto.response.authResponse.AuthenticationResponseDTO;
 import com.test.cria.service.AuthenticationService;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +17,6 @@ public class AuthenticationController {
 
     public AuthenticationController(AuthenticationService authenticationService) {
         this.authenticationService = authenticationService;
-    }
-
-    @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponseDTO> register(
-            @RequestBody RegisterRequestDTO request
-    ) {
-        return ResponseEntity.ok(authenticationService.register(request));
     }
 
     @PostMapping("/login")

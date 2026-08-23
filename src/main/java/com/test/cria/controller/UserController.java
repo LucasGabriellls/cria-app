@@ -2,6 +2,7 @@ package com.test.cria.controller;
 
 import com.test.cria.dto.request.userRequest.UserCreateRequestDTO;
 import com.test.cria.dto.request.userRequest.UserUpdateRequestDTO;
+import com.test.cria.dto.response.authResponse.AuthenticationResponseDTO;
 import com.test.cria.dto.response.userResponse.UserPageResponseDTO;
 import com.test.cria.dto.response.userResponse.UserResponseDTO;
 import com.test.cria.service.UserService;
@@ -28,7 +29,7 @@ public class UserController {
     //@Operation
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public UserResponseDTO findById(@PathVariable @NotNull(message = "ID is required") @Positive(message = "ID must be greater than zero") Long id) { // tratar o notnull
+    public UserResponseDTO findById(@PathVariable @NotNull(message = "ID is required") @Positive(message = "ID must be greater than zero") Long id) {
         return userService.findById(id);
     }
 
@@ -38,7 +39,7 @@ public class UserController {
     public UserPageResponseDTO list(@RequestParam(defaultValue = "0") @PositiveOrZero(message = "Page must be greater than or equal to zero") int page,
                                     @RequestParam(defaultValue = "10") @Positive(message = "Size must be greater than zero")
                                     @Max(value = 20, message = "Size must be less than or equal to 20") int size) {
-        return userService.list(page, size);
+        return userService.findAllPaginated(page, size);
     }
 
     @PostMapping
@@ -46,6 +47,7 @@ public class UserController {
     public UserResponseDTO create(@Valid @RequestBody UserCreateRequestDTO user) {
         return userService.create(user);
     }
+
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)

@@ -12,12 +12,19 @@ public record UserUpdateRequestDTO(
         Long id,
 
         @NotBlank(message = "Username is required")
-        String username,
+        String firstName,
+
+        @NotBlank(message = "Username is required")
+        String lastName,
+
+        @NotBlank(message = "Email is required")
+        @Email(message = "Email format invalid")
+        String email,
 
         @NotBlank(message = "Password is required")
         String password,
 
         @NotEmpty(message = "At least one role is required")
-        Set<RoleEnum> role
+        Set<RoleEnum> roles
 ) {
 }
