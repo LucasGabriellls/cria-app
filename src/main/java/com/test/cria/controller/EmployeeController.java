@@ -2,6 +2,7 @@ package com.test.cria.controller;
 
 import com.test.cria.dto.employee.EmployeeCreateDTO;
 import com.test.cria.dto.employee.EmployeeResponseDTO;
+import com.test.cria.dto.employee.EmployeeUpdateDTO;
 import com.test.cria.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -28,5 +29,11 @@ public class EmployeeController {
     @ResponseStatus(HttpStatus.CREATED)
     public EmployeeResponseDTO create(@Valid @RequestBody EmployeeCreateDTO employeeCreateRequest) {
         return this.employeeService.create(employeeCreateRequest);
+    }
+
+    @PutMapping
+    @ResponseStatus(HttpStatus.OK)
+    public EmployeeResponseDTO update(@Valid @RequestBody EmployeeUpdateDTO employeeUpdateRequest) {
+        return this.employeeService.update(employeeUpdateRequest);
     }
 }

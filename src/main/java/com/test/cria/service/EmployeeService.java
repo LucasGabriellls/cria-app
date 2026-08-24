@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.test.cria.exception.employeeExceptions.EmployeeNotFoundException;
+import com.test.cria.dto.employee.EmployeeUpdateDTO;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,34 +50,71 @@ public class EmployeeService {
     }
 
     @Transactional
-    public EmployeeResponseDTO create(EmployeeCreateDTO employeeCreateRequest) {
-        if (this.userRepository.existsByEmail(employeeCreateRequest.email())) {
+    public EmployeeResponseDTO create(EmployeeCreateDTO request) {
+        if (this.userRepository.existsByEmail(request.email())) {
             throw new UserAlreadyExistsException("Email already exists");
         }
 
-        if (this.employeeRepository.existsByRegistrationNumber(employeeCreateRequest.registrationNumber())) {
+        if (this.employeeRepository.existsByRegistrationNumber(request.registrationNumber())) {
             throw new IllegalArgumentException("Registration number already exists");
         }
 
-        Set<Role> roles = employeeCreateRequest.roles().stream()
+        Set<Role> roles = request.roles().stream()
                 .map(userRole -> this.roleRepository.findByRole(userRole)
                         .orElseThrow(() -> new IllegalArgumentException("Role not found: " + userRole)))
                 .collect(Collectors.toSet());
 
         User user = User.builder()
-                .firstName(employeeCreateRequest.firstName())
-                .lastName(employeeCreateRequest.lastName())
-                .email(employeeCreateRequest.email())
-                .password(this.passwordEncoder.encode(employeeCreateRequest.password()))
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .email(request.email())
+                .password(this.passwordEncoder.encode(request.password()))
                 .roles(roles)
                 .build();
 
         User savedUser = this.userRepository.save(user);
 
         Employee employee = Employee.builder()
-                .registrationNumber(employeeCreateRequest.registrationNumber())
+                .registrationNumber(request.registrationNumber())
                 .user(savedUser)
                 .build();
+
+        Employee savedEmployee = this.employeeRepository.save(employee);
+
+        return this.employeeMapper.toResponseDTO(savedEmployee);
+    }
+
+    @Transactional
+    public EmployeeResponseDTO update(EmployeeUpdateDTO request) {
+        Employee employee = this.employeeRepository.findById(request.id())
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found"));
+
+        if (!employee.getRegistrationNumber().equals(request.registrationNumber())
+                && this.employeeRepository.existsByRegistrationNumber(request.registrationNumber())) {
+            throw new IllegalArgumentException("Registration number already exists");
+        }
+
+        Set<Role> roles = request.roles().stream()
+                .map(userRole -> this.roleRepository.findByRole(userRole)
+                        .orElseThrow(() -> new IllegalArgumentException("Role not found: " + userRole)))
+                .collect(Collectors.toSet());
+
+        User user = employee.getUser();
+
+        if (!user.getEmail().equals(request.email()) && this.userRepository.existsByEmail(request.email())) {
+            throw new UserAlreadyExistsException("Email already exists");
+        }
+
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setEmail(request.email());
+        user.setPassword(this.passwordEncoder.encode(request.password()));
+        user.setRoles(roles);
+
+        User savedUser = this.userRepository.save(user);
+
+        employee.setRegistrationNumber(request.registrationNumber());
+        employee.setUser(savedUser);
 
         Employee savedEmployee = this.employeeRepository.save(employee);
 
