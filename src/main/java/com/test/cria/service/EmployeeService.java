@@ -13,8 +13,8 @@ import com.test.cria.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.test.cria.exception.employeeExceptions.EmployeeNotFoundException;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,7 +27,13 @@ public class EmployeeService {
     private final PasswordEncoder passwordEncoder;
     private final EmployeeMapper employeeMapper;
 
-    public EmployeeService(UserRepository userRepository, RoleRepository roleRepository, EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder, EmployeeMapper employeeMapper) {
+    public EmployeeService(
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            EmployeeRepository employeeRepository,
+            PasswordEncoder passwordEncoder,
+            EmployeeMapper employeeMapper
+    ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.employeeRepository = employeeRepository;
@@ -35,8 +41,11 @@ public class EmployeeService {
         this.employeeMapper = employeeMapper;
     }
 
+
     public EmployeeResponseDTO findById(Long id) {
-        return new EmployeeResponseDTO(id, "John Doe", "Black White", "john.email@gmail.com", "123456", List.of());
+        Employee employee = this.employeeRepository.findById(id)
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found"));
+        return employeeMapper.toResponseDTO(employee);
     }
 
     @Transactional
@@ -71,6 +80,6 @@ public class EmployeeService {
 
         Employee savedEmployee = this.employeeRepository.save(employee);
 
-        return employeeMapper.toResponseDTO(savedEmployee);
+        return this.employeeMapper.toResponseDTO(savedEmployee);
     }
 }

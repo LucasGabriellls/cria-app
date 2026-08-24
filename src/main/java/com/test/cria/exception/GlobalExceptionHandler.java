@@ -1,5 +1,6 @@
 package com.test.cria.exception;
 
+import com.test.cria.exception.employeeExceptions.EmployeeNotFoundException;
 import com.test.cria.exception.userExceptions.InvalidAttributeException;
 import com.test.cria.exception.userExceptions.UserAlreadyExistsException;
 import com.test.cria.exception.userExceptions.UserNotFoundException;
@@ -58,6 +59,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 exception.getMessage(),
                 request.getRequestURI(),
                 ErrorCodeEnum.USER_NOT_FOUND
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(EmployeeNotFoundException.class)
+    private ResponseEntity<ErrorResponse> employeeNotFoundHandler(com.test.cria.exception.employeeExceptions.EmployeeNotFoundException exception, HttpServletRequest request) {
+        ErrorResponse errorResponse = buildErrorResponse(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage(),
+                request.getRequestURI(),
+                ErrorCodeEnum.EMPLOYEE_NOT_FOUND
         );
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
