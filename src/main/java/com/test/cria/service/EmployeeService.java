@@ -1,6 +1,7 @@
 package com.test.cria.service;
 
 import com.test.cria.dto.employee.EmployeeCreateDTO;
+import com.test.cria.dto.employee.EmployeePageResponseDTO;
 import com.test.cria.dto.employee.EmployeeResponseDTO;
 import com.test.cria.entity.Employee;
 import com.test.cria.entity.Role;
@@ -11,11 +12,15 @@ import com.test.cria.repository.EmployeeRepository;
 import com.test.cria.repository.RoleRepository;
 import com.test.cria.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.test.cria.exception.employeeExceptions.EmployeeNotFoundException;
 import com.test.cria.dto.employee.EmployeeUpdateDTO;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,23 +49,38 @@ public class EmployeeService {
 
 
     public EmployeeResponseDTO findById(Long id) {
-        Employee employee = this.employeeRepository.findById(id)
+        Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found"));
         return employeeMapper.toResponseDTO(employee);
     }
 
+    public EmployeePageResponseDTO findAllPaginated(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Employee> employeePage = employeeRepository.findAll(pageable);
+
+        List<EmployeeResponseDTO> employees = employeePage
+                .map(employeeMapper::toResponseDTO)
+                .toList();
+
+        return new EmployeePageResponseDTO(
+                employees,
+                employeePage.getTotalElements(),
+                employeePage.getTotalPages()
+        );
+    }
+
     @Transactional
     public EmployeeResponseDTO create(EmployeeCreateDTO request) {
-        if (this.userRepository.existsByEmail(request.email())) {
+        if (userRepository.existsByEmail(request.email())) {
             throw new UserAlreadyExistsException("Email already exists");
         }
 
-        if (this.employeeRepository.existsByRegistrationNumber(request.registrationNumber())) {
+        if (employeeRepository.existsByRegistrationNumber(request.registrationNumber())) {
             throw new IllegalArgumentException("Registration number already exists");
         }
 
         Set<Role> roles = request.roles().stream()
-                .map(userRole -> this.roleRepository.findByRole(userRole)
+                .map(userRole -> roleRepository.findByRole(userRole)
                         .orElseThrow(() -> new IllegalArgumentException("Role not found: " + userRole)))
                 .collect(Collectors.toSet());
 
@@ -68,20 +88,20 @@ public class EmployeeService {
                 .firstName(request.firstName())
                 .lastName(request.lastName())
                 .email(request.email())
-                .password(this.passwordEncoder.encode(request.password()))
+                .password(passwordEncoder.encode(request.password()))
                 .roles(roles)
                 .build();
 
-        User savedUser = this.userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
         Employee employee = Employee.builder()
                 .registrationNumber(request.registrationNumber())
                 .user(savedUser)
                 .build();
 
-        Employee savedEmployee = this.employeeRepository.save(employee);
+        Employee savedEmployee = employeeRepository.save(employee);
 
-        return this.employeeMapper.toResponseDTO(savedEmployee);
+        return employeeMapper.toResponseDTO(savedEmployee);
     }
 
     @Transactional

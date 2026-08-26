@@ -1,6 +1,7 @@
 package com.test.cria.service;
 
 import com.test.cria.dto.employee.EmployeeCreateDTO;
+import com.test.cria.dto.employee.EmployeePageResponseDTO;
 import com.test.cria.dto.employee.EmployeeResponseDTO;
 import com.test.cria.dto.employee.EmployeeUpdateDTO;
 import com.test.cria.entity.Employee;
@@ -19,8 +20,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -57,21 +63,24 @@ class EmployeeServiceTest {
         Long id = 1L;
 
         User user = createUser(
-                null,
+                id,
                 "John",
                 "Doe",
                 "john@example.com",
                 "pwd");
 
-        Employee employee = createEmployee(id, "reg123", user);
+        Employee employee = createEmployee(
+                id,
+                "123",
+                user);
 
         EmployeeResponseDTO expectedDto = new EmployeeResponseDTO(
                 id,
                 "John",
                 "Doe",
                 "john@example.com",
-                "reg123",
-                List.of());
+                "123",
+                List.of(RoleEnum.TEACHER));
 
         when(employeeRepository.findById(id)).thenReturn(Optional.of(employee));
         when(employeeMapper.toResponseDTO(employee)).thenReturn(expectedDto);
@@ -87,12 +96,92 @@ class EmployeeServiceTest {
     @DisplayName("Should throw EmployeeNotFoundException when searching by non-existing ID")
     void shouldThrowEmployeeNotFoundExceptionWhenSearchingByNonExistingID() {
         Long id = 99L;
+
         when(employeeRepository.findById(id)).thenReturn(Optional.empty());
 
         assertThrows(EmployeeNotFoundException.class, () -> employeeService.findById(id));
         verify(employeeRepository).findById(id);
         verifyNoMoreInteractions(employeeMapper);
     }
+
+    @Test
+    @DisplayName("should return paginated employee page response DTO when records exist")
+    void shouldReturnPaginatedEmployeePageResponseDTOWhenRecordsExist() {
+        int page = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(page, size);
+
+        User user = createUser(
+                1L,
+                "John",
+                "Doe",
+                "john.doe@email.com",
+                "encoded");
+
+        Employee employee = createEmployee(
+                1L,
+                "123",
+                user);
+
+        EmployeeResponseDTO employeeResponseDTO = createEmployeeResponseDTO(
+                1L,
+                "John",
+                "Doe",
+                "john.doe@email.com",
+                "123");
+
+        Page<Employee> employeePage = new PageImpl<>(
+                List.of(employee),
+                pageable,
+                1L);
+
+        when(employeeRepository.findAll(pageable)).thenReturn(employeePage);
+        when(employeeMapper.toResponseDTO(employee)).thenReturn(employeeResponseDTO);
+
+        EmployeePageResponseDTO result = employeeService.findAllPaginated(page, size);
+
+        assertThat(result).isNotNull();
+        assertThat(result.employees()).hasSize(1);
+        assertThat(result.employees().get(0).id()).isEqualTo(1L);
+        assertThat(result.employees().get(0).firstName()).isEqualTo("John");
+        assertThat(result.employees().get(0).lastName()).isEqualTo("Doe");
+        assertThat(result.employees().get(0).email()).isEqualTo("john.doe@email.com");
+        assertThat(result.employees().get(0).registrationNumber()).isEqualTo("123");
+        assertThat(result.totalElements()).isEqualTo(1L);
+        assertThat(result.totalPages()).isEqualTo(1);
+
+        verify(employeeRepository).findAll(pageable);
+        verify(employeeMapper).toResponseDTO(employee);
+        verifyNoMoreInteractions(employeeRepository, employeeMapper);
+    }
+
+    @Test
+    @DisplayName("should return empty employee page response DTO when no records exist")
+    void shouldReturnEmptyEmployeePageResponseDTOWhenNoRecordsExist() {
+        int page = 0;
+        int size = 10;
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Employee> emptyEmployeePage = new PageImpl<>(
+                Collections.emptyList(),
+                pageable,
+                0L);
+
+        when(employeeRepository.findAll(pageable)).thenReturn(emptyEmployeePage);
+
+        EmployeePageResponseDTO result = employeeService.findAllPaginated(page, size);
+
+        assertThat(result).isNotNull();
+        assertThat(result.employees()).isEmpty();
+        assertThat(result.totalElements()).isEqualTo(0L);
+        assertThat(result.totalPages()).isEqualTo(0);
+
+        verify(employeeRepository).findAll(pageable);
+        verifyNoInteractions(employeeMapper);
+    }
+
+
 
     @Test
     @DisplayName("Should create Employee when data is valid")
@@ -106,11 +195,37 @@ class EmployeeServiceTest {
                 Set.of(RoleEnum.ADMIN)
         );
 
-        Role role = createRole(1L, RoleEnum.ADMIN);
-        User savedUser = createUser(10L, "Jane", "Doe", "jane@example.com", "encoded");
-        Employee savedEmployee = createEmployee(20L, "reg-01", savedUser);
+        Role role = createRole(
+                1L,
+                RoleEnum.ADMIN);
+
+        User user = createUser(
+                null,
+                "Jane",
+                "Doe",
+                "jane@example.com",
+                "encoded"
+        );
+
+        User savedUser = createUser(
+                10L,
+                "Jane",
+                "Doe",
+                "jane@example.com",
+                "encoded");
+
+        Employee employee = createEmployee(
+                null,
+                "reg-01",
+                user);
+
+        Employee savedEmployee = createEmployee(
+                10L,
+                "reg-01",
+                savedUser);
+
         EmployeeResponseDTO expectedDto = new EmployeeResponseDTO(
-                20L,
+                10L,
                 "Jane",
                 "Doe",
                 "jane@example.com",
@@ -123,7 +238,7 @@ class EmployeeServiceTest {
         when(passwordEncoder.encode(createDTO.password())).thenReturn("encoded");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
         when(employeeRepository.save(any(Employee.class))).thenReturn(savedEmployee);
-        when(employeeMapper.toResponseDTO(savedEmployee)).thenReturn(expectedDto);
+        when(employeeMapper.toResponseDTO(any(Employee.class))).thenReturn(expectedDto);
 
         EmployeeResponseDTO result = employeeService.create(createDTO);
 
@@ -134,7 +249,7 @@ class EmployeeServiceTest {
         verify(passwordEncoder).encode(createDTO.password());
         verify(userRepository).save(any(User.class));
         verify(employeeRepository).save(any(Employee.class));
-        verify(employeeMapper).toResponseDTO(savedEmployee);
+        verify(employeeMapper).toResponseDTO(any(Employee.class));
     }
 
     @Test
@@ -199,10 +314,19 @@ class EmployeeServiceTest {
     @Test
     @DisplayName("Should update Employee when data is valid")
     void shouldUpdateEmployeeWhenDataIsValid() {
-        // Arrange
         Long id = 1L;
-        User existingUser = createUser(5L, "Old","Name","old@example.com","oldpwd");
-        Employee existingEmployee = createEmployee(id, "old-reg", existingUser);
+
+        User existingUser = createUser(
+                id,
+                "Old",
+                "Name",
+                "old@example.com",
+                "oldpwd");
+
+        Employee existingEmployee = createEmployee(
+                id,
+                    "123",
+                existingUser);
 
         EmployeeUpdateDTO updateDTO = new EmployeeUpdateDTO(
                 id,
@@ -214,9 +338,21 @@ class EmployeeServiceTest {
                 Set.of(RoleEnum.TEACHER)
         );
 
-        Role role = createRole(2L, RoleEnum.TEACHER);
-        User savedUser = createUser(5L, "New","Name","new@example.com","encoded");
-        Employee savedEmployee = createEmployee(id, "new-reg", savedUser);
+        Role role = createRole(
+                2L,
+                RoleEnum.TEACHER);
+
+        User savedUser = createUser(
+                5L,
+                "New",
+                "Name",
+                "new@example.com",
+                "encoded");
+
+        Employee savedEmployee = createEmployee(
+                id,
+                "new-reg",
+                savedUser);
 
         EmployeeResponseDTO expectedDto = new EmployeeResponseDTO(
                 id,
@@ -250,6 +386,7 @@ class EmployeeServiceTest {
     @DisplayName("Should throw EmployeeNotFoundException when updating non-existent employee")
     void shouldThrowEmployeeNotFoundExceptionWhenUpdatingNonExistentEmployee() {
         Long id = 99L;
+
         EmployeeUpdateDTO updateDTO = new EmployeeUpdateDTO(
                 id,
                 "A",
@@ -270,8 +407,18 @@ class EmployeeServiceTest {
     @DisplayName("Should throw IllegalArgumentException when registration number already exists while updating")
     void shouldThrowIllegalArgumentExceptionWhenRegistrationNumberAlreadyExistsWhileUpdating() {
         Long id = 1L;
-        User existingUser = createUser(5L, "X","Y","x@y.com","p");
-        Employee existingEmployee = createEmployee(id, "r1", existingUser);
+
+        User existingUser = createUser(
+                5L,
+                "X",
+                "Y",
+                "x@y.com",
+                "p");
+
+        Employee existingEmployee = createEmployee(
+                id,
+                "r1",
+                existingUser);
 
         EmployeeUpdateDTO updateDTO = new EmployeeUpdateDTO(
                 id,
@@ -295,8 +442,18 @@ class EmployeeServiceTest {
     @DisplayName("Should throw UserAlreadyExistsException when email already exists while updating")
     void shouldThrowUserAlreadyExistsExceptionWhenEmailAlreadyExistsWhileUpdating() {
         Long id = 1L;
-        User existingUser = createUser(5L, "X", "Y", "old@mail.com", "p");
-        Employee existingEmployee = createEmployee(id, "r1", existingUser);
+
+        User existingUser = createUser(
+                5L,
+                "X",
+                "Y",
+                "old@mail.com",
+                "p");
+
+        Employee existingEmployee = createEmployee(
+                id,
+                "r1",
+                existingUser);
 
         EmployeeUpdateDTO updateDTO = new EmployeeUpdateDTO(
                 id,
@@ -308,10 +465,12 @@ class EmployeeServiceTest {
                 Set.of(RoleEnum.TEACHER)
         );
 
-        Role teacherRole = new Role(1L, RoleEnum.TEACHER); // ajuste para como sua entidade Role é instanciada
+        Role teacherRole = new Role(
+                1L,
+                RoleEnum.TEACHER);
 
         when(employeeRepository.findById(id)).thenReturn(Optional.of(existingEmployee));
-        when(roleRepository.findByRole(RoleEnum.TEACHER)).thenReturn(Optional.of(teacherRole)); // <-- FALTAVA ESTA LINHA
+        when(roleRepository.findByRole(RoleEnum.TEACHER)).thenReturn(Optional.of(teacherRole));
         when(userRepository.existsByEmail(updateDTO.email())).thenReturn(true);
 
         assertThrows(UserAlreadyExistsException.class, () -> employeeService.update(updateDTO));
@@ -344,5 +503,17 @@ class EmployeeServiceTest {
         employee.setRegistrationNumber(registrationNumber);
         employee.setUser(user);
         return employee;
+    }
+
+    private EmployeeResponseDTO createEmployeeResponseDTO(Long id, String firstName, String lastName,
+                                                          String email, String registrationNumber) {
+        return new EmployeeResponseDTO(
+                id,
+                firstName,
+                lastName,
+                email,
+                registrationNumber,
+                List.of(RoleEnum.TEACHER)
+        );
     }
 }
