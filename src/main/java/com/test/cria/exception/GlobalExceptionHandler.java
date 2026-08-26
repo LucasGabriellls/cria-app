@@ -1,9 +1,10 @@
 package com.test.cria.exception;
 
-import com.test.cria.exception.employeeExceptions.EmployeeNotFoundException;
-import com.test.cria.exception.userExceptions.InvalidAttributeException;
-import com.test.cria.exception.userExceptions.UserAlreadyExistsException;
-import com.test.cria.exception.userExceptions.UserNotFoundException;
+import com.test.cria.exception.employee.EmployeeDeletionException;
+import com.test.cria.exception.employee.EmployeeNotFoundException;
+import com.test.cria.exception.user.InvalidAttributeException;
+import com.test.cria.exception.user.UserAlreadyExistsException;
+import com.test.cria.exception.user.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import org.jspecify.annotations.Nullable;
@@ -65,9 +66,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(EmployeeNotFoundException.class)
-    private ResponseEntity<ErrorResponse> employeeNotFoundHandler(com.test.cria.exception.employeeExceptions.EmployeeNotFoundException exception, HttpServletRequest request) {
+    private ResponseEntity<ErrorResponse> employeeNotFoundHandler(EmployeeNotFoundException exception, HttpServletRequest request) {
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.NOT_FOUND,
+                exception.getMessage(),
+                request.getRequestURI(),
+                ErrorCodeEnum.EMPLOYEE_NOT_FOUND
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(EmployeeDeletionException.class)
+    private ResponseEntity<ErrorResponse> employeeDeletionFoundHandler(EmployeeNotFoundException exception, HttpServletRequest request) {
+        ErrorResponse errorResponse = buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
                 request.getRequestURI(),
                 ErrorCodeEnum.EMPLOYEE_NOT_FOUND

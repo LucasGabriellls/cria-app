@@ -6,18 +6,21 @@ import com.test.cria.dto.employee.EmployeeResponseDTO;
 import com.test.cria.entity.Employee;
 import com.test.cria.entity.Role;
 import com.test.cria.entity.User;
-import com.test.cria.exception.userExceptions.UserAlreadyExistsException;
+import com.test.cria.entity.enums.RoleEnum;
+import com.test.cria.exception.employee.EmployeeDeletionException;
+import com.test.cria.exception.user.UserAlreadyExistsException;
 import com.test.cria.mapper.EmployeeMapper;
 import com.test.cria.repository.EmployeeRepository;
 import com.test.cria.repository.RoleRepository;
 import com.test.cria.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.test.cria.exception.employeeExceptions.EmployeeNotFoundException;
+import com.test.cria.exception.employee.EmployeeNotFoundException;
 import com.test.cria.dto.employee.EmployeeUpdateDTO;
 
 import java.util.List;
@@ -50,7 +53,7 @@ public class EmployeeService {
 
     public EmployeeResponseDTO findById(Long id) {
         Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found"));
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + id));
         return employeeMapper.toResponseDTO(employee);
     }
 
@@ -106,38 +109,56 @@ public class EmployeeService {
 
     @Transactional
     public EmployeeResponseDTO update(EmployeeUpdateDTO request) {
-        Employee employee = this.employeeRepository.findById(request.id())
+        Employee employee = employeeRepository.findById(request.id())
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found"));
 
         if (!employee.getRegistrationNumber().equals(request.registrationNumber())
-                && this.employeeRepository.existsByRegistrationNumber(request.registrationNumber())) {
+                && employeeRepository.existsByRegistrationNumber(request.registrationNumber())) {
             throw new IllegalArgumentException("Registration number already exists");
         }
 
-        Set<Role> roles = request.roles().stream()
-                .map(userRole -> this.roleRepository.findByRole(userRole)
-                        .orElseThrow(() -> new IllegalArgumentException("Role not found: " + userRole)))
-                .collect(Collectors.toSet());
-
         User user = employee.getUser();
 
-        if (!user.getEmail().equals(request.email()) && this.userRepository.existsByEmail(request.email())) {
+        if (!user.getEmail().equals(request.email()) && userRepository.existsByEmail(request.email())) {
             throw new UserAlreadyExistsException("Email already exists");
         }
+
+        Set<Role> roles = request.roles().stream()
+                .map(userRole -> roleRepository.findByRole(userRole)
+                        .orElseThrow(() -> new IllegalArgumentException("Role not found: " + userRole)))
+                .collect(Collectors.toSet());
 
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setEmail(request.email());
-        user.setPassword(this.passwordEncoder.encode(request.password()));
+        user.setPassword(passwordEncoder.encode(request.password()));
         user.setRoles(roles);
 
-        User savedUser = this.userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
         employee.setRegistrationNumber(request.registrationNumber());
         employee.setUser(savedUser);
 
-        Employee savedEmployee = this.employeeRepository.save(employee);
+        Employee savedEmployee = employeeRepository.save(employee);
 
-        return this.employeeMapper.toResponseDTO(savedEmployee);
+        return employeeMapper.toResponseDTO(savedEmployee);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + id));
+
+        try {
+            employeeRepository.delete(employee);
+        } catch (DataIntegrityViolationException e) {
+            throw new EmployeeDeletionException(
+                    "Unable to delete employee with id: " + id + ". Employee has dependencies that cannot be removed."
+            );
+        }
+    }
+
+    public EmployeePageResponseDTO listByRole(RoleEnum request) {
+        return null;
     }
 }

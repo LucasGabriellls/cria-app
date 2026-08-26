@@ -8,8 +8,8 @@ import com.test.cria.entity.Employee;
 import com.test.cria.entity.Role;
 import com.test.cria.entity.User;
 import com.test.cria.entity.enums.RoleEnum;
-import com.test.cria.exception.employeeExceptions.EmployeeNotFoundException;
-import com.test.cria.exception.userExceptions.UserAlreadyExistsException;
+import com.test.cria.exception.employee.EmployeeNotFoundException;
+import com.test.cria.exception.user.UserAlreadyExistsException;
 import com.test.cria.mapper.EmployeeMapper;
 import com.test.cria.repository.EmployeeRepository;
 import com.test.cria.repository.RoleRepository;
@@ -32,7 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -478,6 +478,52 @@ class EmployeeServiceTest {
         verify(employeeRepository).findById(id);
         verify(roleRepository).findByRole(RoleEnum.TEACHER);
         verify(userRepository).existsByEmail(updateDTO.email());
+    }
+
+    @Test
+    @DisplayName("should delete employee when id exists")
+    void shouldDeleteEmployeeWhenIdExists() {
+        Long id = 1L;
+
+        User user = createUser(
+                id,
+                "John",
+                "Doe",
+                "john.doe@email.com",
+                "pswd");
+
+        Employee employee = createEmployee(
+                id,
+                "123",
+                user);
+
+        when(employeeRepository.findById(id)).thenReturn(Optional.of(employee));
+        doNothing().when(employeeRepository).delete(employee);
+
+        employeeService.delete(id);
+
+        verify(employeeRepository).findById(id);
+        verify(employeeRepository).delete(employee);
+        verifyNoMoreInteractions(employeeRepository);
+    }
+
+    @Test
+    @DisplayName("should throw EmployeeNotFoundException when deleting non-existent employee")
+    void shouldThrowEmployeeNotFoundExceptionWhenDeletingNonExistentEmployee() {
+        Long nonExistentId = 999L;
+
+        when(employeeRepository.findById(nonExistentId)).thenReturn(Optional.empty());
+
+        EmployeeNotFoundException exception = assertThrows(
+                EmployeeNotFoundException.class,
+                () -> employeeService.delete(nonExistentId)
+        );
+
+        assertEquals("Employee not found with id: " + nonExistentId, exception.getMessage());
+
+        verify(employeeRepository).findById(nonExistentId);
+        verify(employeeRepository, never()).delete(any());
+        verifyNoMoreInteractions(employeeRepository);
     }
 
     private Role createRole(Long id, RoleEnum roleEnum) {

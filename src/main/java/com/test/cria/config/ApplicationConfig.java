@@ -1,6 +1,6 @@
 package com.test.cria.config;
 
-import com.test.cria.exception.userExceptions.UserNotFoundException;
+import com.test.cria.exception.user.UserNotFoundException;
 import com.test.cria.repository.UserRepository;
 import lombok.NonNull;
 import org.springframework.context.annotation.Bean;

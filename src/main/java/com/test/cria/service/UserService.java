@@ -1,13 +1,12 @@
 package com.test.cria.service;
 
-import com.test.cria.dto.user.UserCreateRequestDTO;
 import com.test.cria.dto.user.UserUpdateRequestDTO;
 import com.test.cria.dto.user.UserPageResponseDTO;
 import com.test.cria.dto.user.UserResponseDTO;
 import com.test.cria.entity.Role;
 import com.test.cria.entity.User;
-import com.test.cria.exception.userExceptions.UserAlreadyExistsException;
-import com.test.cria.exception.userExceptions.UserNotFoundException;
+import com.test.cria.exception.user.UserAlreadyExistsException;
+import com.test.cria.exception.user.UserNotFoundException;
 import com.test.cria.mapper.UserMapper;
 import com.test.cria.repository.RoleRepository;
 import com.test.cria.repository.UserRepository;

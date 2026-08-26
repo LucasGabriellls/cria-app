@@ -1,4 +1,4 @@
-package com.test.cria.exception.userExceptions;
+package com.test.cria.exception.user;
 
 public class InvalidAttributeException extends RuntimeException {
     public InvalidAttributeException(String message) {

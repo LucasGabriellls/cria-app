@@ -1,4 +1,4 @@
-package com.test.cria.exception.userExceptions;
+package com.test.cria.exception.user;
 
 public class UserNotFoundException extends RuntimeException {
     public UserNotFoundException(String message) {
