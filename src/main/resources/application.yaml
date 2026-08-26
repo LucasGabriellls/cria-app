@@ -1,0 +1,8 @@
+spring:
+    application:
+        name: cria
+    profiles:
+        active: dev
+
+jwt:
+    secret: ${JWT_SECRET}
