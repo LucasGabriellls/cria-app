@@ -21,7 +21,6 @@ public record EmployeeUpdateDTO(
         String email,
 
         @NotBlank(message = "Password is required")
-        @Size(min = 6, message = "Password must have at least 6 characters")
         String password,
 
         @NotBlank(message = "Registration number is required")

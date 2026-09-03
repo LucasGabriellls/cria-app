@@ -1,12 +1,9 @@
 package com.test.cria.controller;
 
-import com.test.cria.dto.user.UserCreateRequestDTO;
-import com.test.cria.dto.user.UserUpdateRequestDTO;
 import com.test.cria.dto.user.UserPageResponseDTO;
 import com.test.cria.dto.user.UserResponseDTO;
 import com.test.cria.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -39,17 +36,5 @@ public class UserController {
                                     @RequestParam(defaultValue = "10") @Positive(message = "Size must be greater than zero")
                                     @Max(value = 20, message = "Size must be less than or equal to 20") int size) {
         return userService.findAllPaginated(page, size);
-    }
-
-    @PutMapping
-    @ResponseStatus(HttpStatus.OK)
-    public UserResponseDTO update(@Valid @RequestBody UserUpdateRequestDTO user) {
-        return userService.update(user);
-    }
-
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable  @NotNull(message = "ID is required") @Positive(message = "ID must be greater than zero") Long id) {
-        userService.delete(id);
     }
 }

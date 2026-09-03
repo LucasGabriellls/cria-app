@@ -35,7 +35,7 @@ public class EmployeeController {
         return employeeService.findAllPaginated(page, size);
     }
 
-    @PostMapping
+    @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public EmployeeResponseDTO create(@Valid @RequestBody EmployeeCreateDTO employeeCreateRequest) {
         return employeeService.create(employeeCreateRequest);
@@ -56,6 +56,6 @@ public class EmployeeController {
     @GetMapping("/role")
     @ResponseStatus(HttpStatus.OK)
     public EmployeePageResponseDTO listByRole(@RequestParam RoleEnum role) {
-        return employeeService.findAllByRole(role);
+        return employeeService.listByRole(role);
     }
 }

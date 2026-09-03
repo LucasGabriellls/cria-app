@@ -1,5 +1,8 @@
 package com.test.cria.exception;
 
+import com.test.cria.exception.classroom.ClassroomAlreadyExistsException;
+import com.test.cria.exception.classroom.ClassroomNotFoundException;
+import com.test.cria.exception.classroom.InvalidClassroomConfigurationException;
 import com.test.cria.exception.employee.EmployeeDeletionException;
 import com.test.cria.exception.employee.EmployeeNotFoundException;
 import com.test.cria.exception.user.InvalidAttributeException;
@@ -87,6 +90,42 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(ClassroomAlreadyExistsException.class)
+    private ResponseEntity<ErrorResponse> classroomAlreadyExistsHandler(ClassroomAlreadyExistsException exception, HttpServletRequest request) {
+        ErrorResponse errorResponse = buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage(),
+                request.getRequestURI(),
+                ErrorCodeEnum.CLASSROOM_ALREADY_EXISTS
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(InvalidClassroomConfigurationException.class)
+    private ResponseEntity<ErrorResponse> invalidClassroomConfigurationHandler(InvalidClassroomConfigurationException exception, HttpServletRequest request) {
+        ErrorResponse errorResponse = buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage(),
+                request.getRequestURI(),
+                ErrorCodeEnum.INVALID_CLASSROOM_CONFIGURATION
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(ClassroomNotFoundException.class)
+    private ResponseEntity<ErrorResponse> classroomNotFoundHandler(ClassroomNotFoundException exception, HttpServletRequest request) {
+        ErrorResponse errorResponse = buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                exception.getMessage(),
+                request.getRequestURI(),
+                ErrorCodeEnum.CLASSROOM_NOT_FOUND
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

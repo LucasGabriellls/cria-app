@@ -80,7 +80,7 @@ class EmployeeServiceTest {
                 "Doe",
                 "john@example.com",
                 "123",
-                List.of(RoleEnum.TEACHER));
+                List.of(RoleEnum. PROFESSOR));
 
         when(employeeRepository.findById(id)).thenReturn(Optional.of(employee));
         when(employeeMapper.toResponseDTO(employee)).thenReturn(expectedDto);
@@ -335,12 +335,12 @@ class EmployeeServiceTest {
                 "new@example.com",
                 "newpass",
                 "new-reg",
-                Set.of(RoleEnum.TEACHER)
+                Set.of(RoleEnum. PROFESSOR)
         );
 
         Role role = createRole(
                 2L,
-                RoleEnum.TEACHER);
+                RoleEnum. PROFESSOR);
 
         User savedUser = createUser(
                 5L,
@@ -360,13 +360,13 @@ class EmployeeServiceTest {
                 "Name",
                 "new@example.com",
                 "new-reg",
-                java.util.List.of(RoleEnum.TEACHER)
+                java.util.List.of(RoleEnum. PROFESSOR)
         );
 
         when(employeeRepository.findById(id)).thenReturn(Optional.of(existingEmployee));
         when(employeeRepository.existsByRegistrationNumber(updateDTO.registrationNumber())).thenReturn(false);
         when(userRepository.existsByEmail(updateDTO.email())).thenReturn(false);
-        when(roleRepository.findByRole(RoleEnum.TEACHER)).thenReturn(Optional.of(role));
+        when(roleRepository.findByRole(RoleEnum. PROFESSOR)).thenReturn(Optional.of(role));
         when(passwordEncoder.encode(updateDTO.password())).thenReturn("encoded");
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
         when(employeeRepository.save(any(Employee.class))).thenReturn(savedEmployee);
@@ -394,7 +394,7 @@ class EmployeeServiceTest {
                 "a@b.com",
                 "p",
                 "r",
-                Set.of(RoleEnum.TEACHER)
+                Set.of(RoleEnum. PROFESSOR)
         );
 
         when(employeeRepository.findById(id)).thenReturn(Optional.empty());
@@ -427,7 +427,7 @@ class EmployeeServiceTest {
                 "x@y.com",
                 "p",
                 "r2",
-                Set.of(RoleEnum.TEACHER)
+                Set.of(RoleEnum. PROFESSOR)
         );
 
         when(employeeRepository.findById(id)).thenReturn(Optional.of(existingEmployee));
@@ -462,21 +462,21 @@ class EmployeeServiceTest {
                 "already@mail.com",
                 "p",
                 "r1",
-                Set.of(RoleEnum.TEACHER)
+                Set.of(RoleEnum. PROFESSOR)
         );
 
         Role teacherRole = new Role(
                 1L,
-                RoleEnum.TEACHER);
+                RoleEnum. PROFESSOR);
 
         when(employeeRepository.findById(id)).thenReturn(Optional.of(existingEmployee));
-        when(roleRepository.findByRole(RoleEnum.TEACHER)).thenReturn(Optional.of(teacherRole));
+        when(roleRepository.findByRole(RoleEnum. PROFESSOR)).thenReturn(Optional.of(teacherRole));
         when(userRepository.existsByEmail(updateDTO.email())).thenReturn(true);
 
         assertThrows(UserAlreadyExistsException.class, () -> employeeService.update(updateDTO));
 
         verify(employeeRepository).findById(id);
-        verify(roleRepository).findByRole(RoleEnum.TEACHER);
+        verify(roleRepository).findByRole(RoleEnum. PROFESSOR);
         verify(userRepository).existsByEmail(updateDTO.email());
     }
 
@@ -559,7 +559,7 @@ class EmployeeServiceTest {
                 lastName,
                 email,
                 registrationNumber,
-                List.of(RoleEnum.TEACHER)
+                List.of(RoleEnum. PROFESSOR)
         );
     }
 }

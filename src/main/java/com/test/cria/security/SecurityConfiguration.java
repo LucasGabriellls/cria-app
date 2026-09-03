@@ -30,14 +30,20 @@ public class SecurityConfiguration {
                 .csrf(csrf -> csrf.disable()
                 )
 
+                .cors(cors -> cors.configure(http))
+
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/users/**")
-                            .hasAnyRole("ADMIN", "DIRECTOR", "COORDINATOR", "SECRETARY")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/employees/register").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        .requestMatchers("/api/v1/employees/**").hasAnyRole("ADMIN", "DIRECTOR", "COORDINATOR", "SECRETARY")
+                        .requestMatchers("/api/v1/users/**").hasAnyRole("ADMIN", "DIRECTOR", "COORDINATOR", "SECRETARY")
+
                         .anyRequest().authenticated()
                 )
 
