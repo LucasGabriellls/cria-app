@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 @Service
+@Slf4j
 public class JwtService {
 
     @Value("${JWT_SECRET}")
@@ -38,6 +40,8 @@ public class JwtService {
             Map<String, Object> extraClaims,
             UserDetails userDetails
     ) {
+        log.debug("Generating JWT token for user: {}", userDetails.getUsername());
+
         return Jwts
                 .builder()
                 .claims(extraClaims)

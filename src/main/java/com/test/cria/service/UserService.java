@@ -6,13 +6,16 @@ import com.test.cria.entity.User;
 import com.test.cria.exception.user.UserNotFoundException;
 import com.test.cria.mapper.UserMapper;
 import com.test.cria.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
@@ -24,14 +27,34 @@ public class UserService {
     }
 
     public UserResponseDTO findById(Long id) {
-        return this.userMapper.toUserResponseDTO(this.userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found")));
+        log.debug("Searching for user with ID: {} in database", id);
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("User with ID: {} not found in database", id);
+                    return new UserNotFoundException("User not found");
+                });
+
+        log.debug("User with ID: {} found in database", id);
+
+        return userMapper.toUserResponseDTO(user);
     }
     
     public UserPageResponseDTO findAllPaginated(int  page, int size) {
-        Page<User> pageUser = this.userRepository.findAll(PageRequest.of(page, size));
-        List<UserResponseDTO> userResponse = pageUser.get().map(this.userMapper::toUserResponseDTO).toList();
+        log.debug("Fetching paginated users from database [page={}, size={}]", page, size);
 
-        return new UserPageResponseDTO(userResponse, pageUser.getTotalElements(), pageUser.getTotalPages());
+        Pageable pageable = PageRequest.of(page, size);
+        Page<User> pageUser = userRepository.findAll(pageable);
+
+        List<UserResponseDTO> userResponse = pageUser.getContent().stream()
+                .map(this.userMapper::toUserResponseDTO)
+                .toList();
+
+        log.debug("Successfully fetched {} users from database [totalElements={}, totalPages={}]",
+                userResponse.size(), pageUser.getTotalElements(), pageUser.getTotalPages());
+
+        return new UserPageResponseDTO(userResponse,
+                pageUser.getTotalElements(),
+                pageUser.getTotalPages());
     }
 }

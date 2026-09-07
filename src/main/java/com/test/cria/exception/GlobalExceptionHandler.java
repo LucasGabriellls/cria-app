@@ -10,6 +10,7 @@ import com.test.cria.exception.user.UserAlreadyExistsException;
 import com.test.cria.exception.user.UserNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -30,10 +31,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidAttributeException.class)
     private ResponseEntity<ErrorResponse> invalidAttributeHandler(InvalidAttributeException exception, HttpServletRequest request) {
+        log.warn("Invalid attribute provided at path '{}': {}", request.getRequestURI(), exception.getMessage());
+
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
@@ -46,6 +50,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     private ResponseEntity<ErrorResponse> userAlreadyExistsHandler(UserAlreadyExistsException exception, HttpServletRequest request) {
+        log.warn("User creation/update failed at path '{}': {}", request.getRequestURI(), exception.getMessage());
+
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
@@ -58,6 +64,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(UserNotFoundException.class)
     private ResponseEntity<ErrorResponse> userNotFoundHandler(UserNotFoundException exception, HttpServletRequest request) {
+        log.warn("Resource not found at path '{}': {}", request.getRequestURI(), exception.getMessage());
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.NOT_FOUND,
                 exception.getMessage(),
@@ -70,6 +77,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(EmployeeNotFoundException.class)
     private ResponseEntity<ErrorResponse> employeeNotFoundHandler(EmployeeNotFoundException exception, HttpServletRequest request) {
+        log.warn("Employee resource not found at path '{}': {}", request.getRequestURI(), exception.getMessage());
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.NOT_FOUND,
                 exception.getMessage(),
@@ -81,19 +89,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(EmployeeDeletionException.class)
-    private ResponseEntity<ErrorResponse> employeeDeletionFoundHandler(EmployeeNotFoundException exception, HttpServletRequest request) {
+    private ResponseEntity<ErrorResponse> employeeDeletionFoundHandler(EmployeeDeletionException exception, HttpServletRequest request) {
+        log.warn("Employee deletion blocked at path '{}': {}", request.getRequestURI(), exception.getMessage());
+
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
                 request.getRequestURI(),
-                ErrorCodeEnum.EMPLOYEE_NOT_FOUND
+                ErrorCodeEnum.EMPLOYEE_DELETION_FAILED
         );
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(ClassroomAlreadyExistsException.class)
     private ResponseEntity<ErrorResponse> classroomAlreadyExistsHandler(ClassroomAlreadyExistsException exception, HttpServletRequest request) {
+        log.warn("Classroom creation/update failed at path '{}': {}", request.getRequestURI(), exception.getMessage());
+
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
@@ -106,6 +118,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidClassroomConfigurationException.class)
     private ResponseEntity<ErrorResponse> invalidClassroomConfigurationHandler(InvalidClassroomConfigurationException exception, HttpServletRequest request) {
+        log.warn("Invalid classroom configuration at path '{}': {}", request.getRequestURI(), exception.getMessage());
+
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 exception.getMessage(),
@@ -118,14 +132,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ClassroomNotFoundException.class)
     private ResponseEntity<ErrorResponse> classroomNotFoundHandler(ClassroomNotFoundException exception, HttpServletRequest request) {
+        log.warn("Classroom resource not found at path '{}': {}", request.getRequestURI(), exception.getMessage());
+
         ErrorResponse errorResponse = buildErrorResponse(
-                HttpStatus.BAD_REQUEST,
+                HttpStatus.NOT_FOUND,
                 exception.getMessage(),
                 request.getRequestURI(),
                 ErrorCodeEnum.CLASSROOM_NOT_FOUND
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
