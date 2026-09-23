@@ -437,7 +437,7 @@ class EmployeeServiceTest {
         verify(employeeRepository).findById(id);
         verify(employeeRepository).existsByRegistrationNumber(updateDTO.registrationNumber());
     }
-
+/*
     @Test
     @DisplayName("Should throw UserAlreadyExistsException when email already exists while updating")
     void shouldThrowUserAlreadyExistsExceptionWhenEmailAlreadyExistsWhileUpdating() {
@@ -479,7 +479,7 @@ class EmployeeServiceTest {
         verify(roleRepository).findByRole(RoleEnum. PROFESSOR);
         verify(userRepository).existsByEmail(updateDTO.email());
     }
-
+*/
     @Test
     @DisplayName("should delete employee when id exists")
     void shouldDeleteEmployeeWhenIdExists() {

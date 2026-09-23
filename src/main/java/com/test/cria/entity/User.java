@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,7 +33,7 @@ public class User implements UserDetails {
 
     private String password;
 
-    private Date activity;
+    private LocalDate activity;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

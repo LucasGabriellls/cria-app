@@ -118,7 +118,7 @@ class UserServiceTest {
                 "Test",
                 "user.test@email.com",
                 "userPassword123",
-                new Date(),
+                null,
                 Set.of(roleEntity)
         );
     }
