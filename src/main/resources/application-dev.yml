@@ -4,9 +4,14 @@ spring:
         username: ${DB_USERNAME}
         password: ${DB_PASSWORD}
     jpa:
-        database-platform: ${DB_DIALECT}
         hibernate:
           ddl-auto: update
+    config:
+      import: "optional:file:.env[.properties]"
+
+jwt:
+  secret: ${JWT_SECRET}
+
 logging:
     level:
       root: INFO
